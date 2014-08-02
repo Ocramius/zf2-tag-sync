@@ -19,7 +19,7 @@ file_put_contents(
                 function () {
                     return 'dev-master@DEV';
                 },
-                json_decode(file_get_contents(__DIR__ . '/zf2/composer.json'))['replace']
+                json_decode(file_get_contents(__DIR__ . '/zf2/composer.json'), true)['replace']
             )
         ),
     ])
