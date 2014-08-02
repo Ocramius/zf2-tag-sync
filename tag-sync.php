@@ -160,7 +160,7 @@ $doGitPush = function ($directory, $remote, $ref) use ($runInDir) {
     $runInDir(
         function () use ($remote, $ref) {
             exec(sprintf(
-                'git push -f %s %s',
+                'git push %s %s',
                 escapeshellarg($remote),
                 escapeshellarg($ref)
             ));
