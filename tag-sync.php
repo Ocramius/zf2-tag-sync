@@ -252,11 +252,28 @@ $getCommitsBetween = function ($directory, $commit1, $commit2) use ($runInDir) {
     );
 };
 
+/**
+ * Import state of a particular commit from a path into a new path, committing it with a message
+ *
+ * @param string $pathFrom
+ * @param string $commitFrom
+ * @param string $pathTo
+ * @param string $message
+ */
+$importCommit = function ($pathFrom, $commitFrom, $pathTo, $message) use ($doGitReset, $doGitCheckout, $doRsync, $doGitCommit) {
+    $doGitReset($pathFrom);
+    $doGitReset($pathTo);
+    $doGitCheckout($pathFrom, $commitFrom);
+    $doRsync($pathFrom, $pathTo);
+
+    $doGitCommit($pathTo, $message, true);
+};
+
 $doGitCheckout($zfPath, $newTag);
 $doGitReset($zfPath);
 
 array_map(
-    function (FrameworkComponent $component) use ($doGitCheckout, $oldTag, $newTag, $doRsync, $zfPath, $checkGitDiff, $doGitReset, $doGitTag, $getCommitTime, $getCommitHash, $doGitCommit, $doGitPush, $remote) {
+    function (FrameworkComponent $component) use ($importCommit, $doGitCheckout, $oldTag, $newTag, $doRsync, $zfPath, $checkGitDiff, $doGitReset, $doGitTag, $getCommitTime, $getCommitHash, $doGitCommit, $doGitPush, $remote) {
         echo 'Checking "' . $component->getName() . ' - [' . $component->getNamespace() . ']"' . "\n";
 
         $doGitReset($component->getVendorPath());
