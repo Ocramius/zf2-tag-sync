@@ -284,13 +284,13 @@ $getCommitsBetween = function ($directory, $oldCommit, $newCommit) use ($runInDi
  * @param string $pathTo
  * @param string $message
  */
-$importCommit = function ($pathFrom, $commitFrom, $pathTo, $message) use ($doGitReset, $doGitCheckout, $doRsync, $doGitCommit) {
+$importCommit = function ($pathFrom, Commit $commitFrom, $pathTo, $message) use ($doGitReset, $doGitCheckout, $doRsync, $doGitCommit) {
     $doGitReset($pathFrom);
     $doGitReset($pathTo);
-    $doGitCheckout($pathFrom, $commitFrom);
+    $doGitCheckout($pathFrom, $commitFrom->getHash());
     $doRsync($pathFrom, $pathTo);
 
-    $doGitCommit($pathTo, $message, true);
+    $doGitCommit($pathTo, $message, true, $commitFrom->getTime());
 };
 
 $runInSequence = function ($functions, $data) {
@@ -318,7 +318,7 @@ $runInSequence(
                     echo 'Importing commit ' . $commit->getHash() . ' for component ' . $component->getName() . \PHP_EOL;
                     $importCommit(
                         $component->getFrameworkPath(),
-                        $commit->getHash(),
+                        $commit,
                         $component->getVendorPath(),
                         sprintf(
                             "Importing state as of zendframework/zf2@%s (%s)\n\nAutomatic import via rsync",
