@@ -200,10 +200,22 @@ $getLastCommit = function ($directory, $path) use ($runInDir) {
     );
 };
 
+/**
+ * @param string $directory
+ * @param string $path
+ *
+ * @return int
+ */
 $getCommitTime = function ($directory, $path) use ($getLastCommit) {
     return $getLastCommit($directory, $path)->getTime();
 };
 
+/**
+ * @param string $directory
+ * @param string $path
+ *
+ * @return string
+ */
 $getCommitHash = function ($directory, $path) use ($getLastCommit) {
     return $getLastCommit($directory, $path)->getHash();
 };
