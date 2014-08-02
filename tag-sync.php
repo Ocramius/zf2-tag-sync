@@ -2,6 +2,7 @@
 <?php
 
 require_once __DIR__ . '/FrameworkComponent.php';
+require_once __DIR__ . '/Commit.php';
 
 $settings = require __DIR__ . '/settings.php';
 
@@ -194,6 +195,37 @@ $getCommitTime = function ($directory, $path) use ($getLastCommit) {
 
 $getCommitHash = function ($directory, $path) use ($getLastCommit) {
     return explode(':', $getLastCommit($directory, $path))[1];
+};
+
+/**
+ * @param string $directory
+ * @param string $commit1
+ * @param string $commit2
+ *
+ * @return Commit[]
+ */
+$getCommitsBetween = function ($directory, $commit1, $commit2) use ($runInDir) {
+    return $runInDir(
+        function () use ($commit1, $commit2) {
+            exec(
+                sprintf(
+                    'git log --format=format:"%%ct:%%H" %s',
+                    escapeshellarg($commit1 . '..' . $commit2)
+                ),
+                $output
+            );
+
+            return array_map(
+                function ($commitString) {
+                    $commitData = explode(':', $commitString);
+
+                    return new Commit($commitData[1], (int) $commitData[0]);
+                },
+                $output
+            );
+        },
+        $directory
+    );
 };
 
 $doGitCheckout($zfPath, $newTag);
