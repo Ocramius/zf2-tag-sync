@@ -1,3 +1,4 @@
+#!/usr/bin/env php
 <?php
 
 $settings = require __DIR__ . '/settings.php';
