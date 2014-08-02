@@ -67,6 +67,20 @@ $findVendorComponents = function ($path) use ($componentsPath, $extractComponent
     );
 };
 
+$buildComponents = function ($vendorComponentsPath, $frameworkPath) use ($findVendorComponents, $extractComponentNamespace, $getComponentFrameworkPath) {
+    return array_map(
+        function ($vendorComponentPath) use ($vendorComponentsPath, $frameworkPath, $extractComponentNamespace, $getComponentFrameworkPath) {
+            return new FrameworkComponent(
+                $extractComponentNamespace($vendorComponentPath, $vendorComponentsPath),
+                json_decode(file_get_contents($vendorComponentPath . '/composer.json'), true)['name'],
+                $getComponentFrameworkPath($extractComponentNamespace($vendorComponentPath, $vendorComponentsPath), $frameworkPath),
+                $vendorComponentPath
+            );
+        },
+        $findVendorComponents($vendorComponentsPath)
+    );
+};
+
 $extractComponentName = function ($path, $basePath) {
     $relativePath = str_replace($basePath, '', $path);
     $segments     = explode('/', $relativePath);
