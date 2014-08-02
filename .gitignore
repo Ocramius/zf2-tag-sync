@@ -1,5 +1,6 @@
 vendor
 zf2
 composer.lock
+composer.json
 composer.phar
 settings.php
