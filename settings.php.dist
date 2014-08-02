@@ -2,11 +2,13 @@
 
 return [
     // assuming vendor packages were installed here via composer + --prefer-source
-    'componentsPath' => __DIR__ . '/vendor/zendframework',
+    'componentsPath'   => __DIR__ . '/vendor/zendframework',
     // assuming the framework was installed here
-    'zfPath'         => __DIR__ . '/zf2',
+    'zfPath'           => __DIR__ . '/zf2',
     // tag to start from
-    'fromTag'        => 'release-2.3.0',
+    'fromTag'          => 'release-2.3.0',
     // tag to be created/synchronized
-    'toTag'          => 'release-2.3.1',
+    'toTag'            => 'release-2.3.1',
+    // remote where to push to
+    'componentsRemote' => 'origin',
 ];
