@@ -307,11 +307,16 @@ $doGitReset($zfPath);
 
 $runInSequence(
     [
-        function (FrameworkComponent $component) use ($getCommitsBetween, $doGitCheckoutNewBranch, $importCommit, $doGitCheckout, $oldTag, $newTag, $doRsync, $zfPath, $checkGitDiff, $doGitReset, $doGitTag, $getCommitTime, $getCommitHash, $doGitCommit, $doGitPush, $remote) {
+        function (FrameworkComponent $component) use ($doGitReset) {
+            $doGitReset($component->getFrameworkPath());
+            $doGitReset($component->getVendorPath());
+        },
+        function (FrameworkComponent $component) use ($getCommitsBetween, $doGitCheckoutNewBranch, $importCommit, $doGitCheckout, $oldTag, $newTag, $zfPath) {
             echo 'Checking "' . $component->getName() . ' - [' . $component->getNamespace() . ']"' . "\n";
 
-            $doGitCheckout($component->getVendorPath(), $oldTag); // start importing from the old tag first
-            $doGitCheckoutNewBranch($component->getVendorPath(), 'import-commits-from-' . $oldTag . '-to-' . $newTag);
+            $doGitCheckout($component->getFrameworkPath(), $oldTag); // start importing from the old tag first
+            //$doGitCheckoutNewBranch($component->getVendorPath(), 'import-commits-from-' . $oldTag . '-to-' . $newTag);
+            $doGitCheckout($component->getVendorPath(), 'master');
 
             array_map(
                 function (Commit $commit) use ($importCommit, $component) {
@@ -340,9 +345,23 @@ $runInSequence(
                 ),
                 $newTag
             );
+        },
+        function (FrameworkComponent $component) use ($checkGitDiff, $doRsync, $doGitCheckout, $newTag) {
+            $doGitCheckout($component->getFrameworkPath(), $newTag);
+            $doGitCheckout($component->getVendorPath(), $newTag);
+            $doRsync($component->getFrameworkPath(), $component->getVendorPath());
 
-            //$doGitPush($componentPath, $remote, $tag);
+            if ($checkGitDiff) {
+                throw new \Exception(sprintf(
+                    'Component "%s" differs from framework component path for tag "%s"',
+                    $component->getName(),
+                    $newTag
+                ));
+            }
+        },
+        function (FrameworkComponent $component) use ($remote, $doGitPush, $newTag) {
+            //$doGitPush($component->getVendorPath(), $remote, $newTag);
         },
     ],
-    $buildComponents($componentsPath, $zfPath)
+    array_slice($buildComponents($componentsPath, $zfPath), 0, 2)
 );
