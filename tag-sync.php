@@ -177,24 +177,35 @@ $checkGitDiff = function ($directory) use ($runInDir) {
     );
 };
 
+/**
+ * @param string $directory
+ * @param string $path
+ *
+ * @return Commit
+ */
 $getLastCommit = function ($directory, $path) use ($runInDir) {
     return $runInDir(
         function () use ($path) {
-            return exec(sprintf(
-                'git log -1 --format=format:"%%ct:%%H" %s',
-                escapeshellarg($path)
-            ));
+            $commitData = explode(
+                ':',
+                exec(sprintf(
+                    'git log -1 --format=format:"%%ct:%%H" %s',
+                    escapeshellarg($path)
+                ))
+            );
+
+            return new Commit($commitData[1], (int) $commitData[0]);
         },
         $directory
     );
 };
 
 $getCommitTime = function ($directory, $path) use ($getLastCommit) {
-    return explode(':', $getLastCommit($directory, $path))[0];
+    return $getLastCommit($directory, $path)->getTime();
 };
 
 $getCommitHash = function ($directory, $path) use ($getLastCommit) {
-    return explode(':', $getLastCommit($directory, $path))[1];
+    return $getLastCommit($directory, $path)->getHash();
 };
 
 /**
@@ -232,7 +243,7 @@ $doGitCheckout($zfPath, $newTag);
 $doGitReset($zfPath);
 
 array_map(
-    function (FrameworkComponent $component) use ($doGitCheckout, $oldTag, $newTag, $doRsync, $zfPath, $checkGitDiff, $doGitReset, $doGitTag, $getLastCommit, $getCommitTime, $getCommitHash, $doGitCommit, $doGitPush, $remote) {
+    function (FrameworkComponent $component) use ($doGitCheckout, $oldTag, $newTag, $doRsync, $zfPath, $checkGitDiff, $doGitReset, $doGitTag, $getCommitTime, $getCommitHash, $doGitCommit, $doGitPush, $remote) {
         echo 'Checking "' . $component->getName() . ' - [' . $component->getNamespace() . ']"' . "\n";
 
         $doGitReset($component->getVendorPath());
