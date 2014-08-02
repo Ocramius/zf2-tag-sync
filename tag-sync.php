@@ -48,7 +48,7 @@ $getComponentFrameworkPath = function ($componentNamespace, $zfPath) {
  *
  * @param string $path
  *
- * @return FrameworkComponent[]
+ * @return string[]
  */
 $findVendorComponents = function ($path) use ($componentsPath, $extractComponentNamespace, $getComponentFrameworkPath) {
     return array_map(
