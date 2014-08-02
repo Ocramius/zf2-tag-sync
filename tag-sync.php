@@ -223,18 +223,18 @@ $getCommitHash = function ($directory, $path) use ($getLastCommit) {
 
 /**
  * @param string $directory
- * @param string $commit1
- * @param string $commit2
+ * @param string $oldCommit
+ * @param string $newCommit
  *
  * @return Commit[]
  */
-$getCommitsBetween = function ($directory, $commit1, $commit2) use ($runInDir) {
+$getCommitsBetween = function ($directory, $oldCommit, $newCommit) use ($runInDir) {
     return $runInDir(
-        function () use ($commit1, $commit2) {
+        function () use ($oldCommit, $newCommit) {
             exec(
                 sprintf(
                     'git log --format=format:"%%ct:%%H" %s',
-                    escapeshellarg($commit1 . '..' . $commit2)
+                    escapeshellarg($oldCommit . '..' . $newCommit)
                 ),
                 $output
             );
@@ -273,37 +273,39 @@ $doGitCheckout($zfPath, $newTag);
 $doGitReset($zfPath);
 
 array_map(
-    function (FrameworkComponent $component) use ($importCommit, $doGitCheckout, $oldTag, $newTag, $doRsync, $zfPath, $checkGitDiff, $doGitReset, $doGitTag, $getCommitTime, $getCommitHash, $doGitCommit, $doGitPush, $remote) {
+    function (FrameworkComponent $component) use ($getCommitsBetween, $importCommit, $doGitCheckout, $oldTag, $newTag, $doRsync, $zfPath, $checkGitDiff, $doGitReset, $doGitTag, $getCommitTime, $getCommitHash, $doGitCommit, $doGitPush, $remote) {
         echo 'Checking "' . $component->getName() . ' - [' . $component->getNamespace() . ']"' . "\n";
 
-        $doGitReset($component->getVendorPath());
-        $doGitCheckout($component->getVendorPath(), $newTag);
+        $doGitCheckout($component->getVendorPath(), $oldTag); // start importing from the old tag first
 
-        $doRsync($component->getFrameworkPath(), $component->getVendorPath());
+        array_map(
+            function (Commit $commit) use ($importCommit, $component) {
+                var_dump(['import' => ['hash' => $commit->getHash(), 'component' => $component->getName()]]);
+                $importCommit(
+                    $component->getFrameworkPath(),
+                    $commit->getHash(),
+                    $component->getVendorPath(),
+                    sprintf(
+                        "Importing state as of zendframework/zf2@%s (%s)\n\nAutomatic import via rsync",
+                        $commit->getHash(),
+                        $commit->getTime()
+                    )
+                );
+            },
+            $getCommitsBetween($zfPath, $oldTag, $newTag)
+        );
 
-        if ($checkGitDiff($component->getVendorPath())) {
-            $doGitCommit(
-                $component->getVendorPath(),
-                sprintf(
-                    "Importing state as of zendframework/zf2@%s (%s)\n\nAutomatic import via rsync\n\nPreparing release for tag '%s'",
-                    $getCommitHash($zfPath, $component->getFrameworkPath()),
-                    $getCommitTime($zfPath, $component->getFrameworkPath()),
-                    $newTag
-                )
-            );
+        $doGitTag(
+            $component->getVendorPath(),
+            sprintf(
+                'zendframework/zf2@%s (%s)',
+                $getCommitHash($zfPath, $component->getFrameworkPath()),
+                $getCommitTime($zfPath, $component->getFrameworkPath())
+            ),
+            $newTag
+        );
 
-            $doGitTag(
-                $component->getVendorPath(),
-                sprintf(
-                    'zendframework/zf2@%s (%s)',
-                    $getCommitHash($zfPath, $component->getFrameworkPath()),
-                    $getCommitTime($zfPath, $component->getFrameworkPath())
-                ),
-                $newTag
-            );
-
-            //$doGitPush($componentPath, $remote, $tag);
-        }
+        //$doGitPush($componentPath, $remote, $tag);
     },
     $buildComponents($componentsPath, $zfPath)
 );
