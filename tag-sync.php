@@ -191,7 +191,7 @@ array_map(
                 $tag
             );
 
-            $doGitPush($componentPath, $remote, $tag);
+            //$doGitPush($componentPath, $remote, $tag);
         }
     },
     $findVendorComponents($componentsPath)
