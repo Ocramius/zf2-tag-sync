@@ -3,10 +3,10 @@
 
 $settings = require __DIR__ . '/settings.php';
 
-$componentsPath = $settings['componentPath'];
+$componentsPath = $settings['componentsPath'];
 $zfPath         = $settings['zfPath'];
 $tag            = $settings['toTag'];
-$remote         = $settings['remote'];
+$remote         = $settings['componentsRemote'];
 
 $findVendorComponents = function ($path) {
     new RecursiveIteratorIterator(
