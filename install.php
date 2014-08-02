@@ -33,4 +33,4 @@ file_put_contents(
 );
 
 system('curl -sS https://getcomposer.org/installer | php --');
-system('php composer.phar install --prefer-dist');
+system('php composer.phar install --prefer-source');
