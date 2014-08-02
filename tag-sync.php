@@ -260,7 +260,7 @@ array_map(
         echo 'Checking "' . $component->getName() . ' - [' . $component->getNamespace() . ']"' . "\n";
 
         $doGitReset($component->getVendorPath());
-        $doGitCheckout($component->getVendorPath(), $oldTag);
+        $doGitCheckout($component->getVendorPath(), $newTag);
 
         $doRsync($component->getFrameworkPath(), $component->getVendorPath());
 
