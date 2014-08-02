@@ -52,7 +52,7 @@ $getComponentFrameworkPath = function ($componentNamespace, $zfPath) {
  *
  * @return string[]
  */
-$findVendorComponents = function ($path) use ($componentsPath, $extractComponentNamespace, $getComponentFrameworkPath) {
+$findVendorComponents = function ($path) {
     return array_map(
         function (\SplFileInfo $dir) {
             return $dir->getRealPath();
