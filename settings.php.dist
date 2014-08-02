@@ -8,5 +8,5 @@ return [
     // tag to start from
     'fromTag'        => 'release-2.3.0',
     // tag to be created/synchronized
-    'toTag'          => 'release-2.3.0',
+    'toTag'          => 'release-2.3.1',
 ];
