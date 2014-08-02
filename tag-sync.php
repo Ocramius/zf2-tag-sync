@@ -1,9 +1,11 @@
 <?php
 
-$componentsPath = __DIR__ . '/vendor/zendframework'; // assuming vendor packages were installed here via composer + --prefer-source
-$zfPath         = __DIR__ . '/zf2';                  // assuming the framework was installed here
-$tag            = 'release-2.3.0';                   // tag to be used
-$remote         = 'origin';
+$settings = require __DIR__ . '/settings.php';
+
+$componentsPath = $settings['componentPath'];
+$zfPath         = $settings['zfPath'];
+$tag            = $settings['toTag'];
+$remote         = $settings['remote'];
 
 $findVendorComponents = function ($path) {
     new RecursiveIteratorIterator(
