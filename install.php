@@ -34,3 +34,7 @@ file_put_contents(
 
 system('curl -sS https://getcomposer.org/installer | php --');
 system('php composer.phar install --prefer-source');
+
+if (! file_exists(__DIR__ . '/settings.php')) {
+    copy(__DIR__ . '/settings.php.dist', __DIR__ . '/settings.php');
+}
