@@ -280,7 +280,7 @@ $getCommitsBetween = function ($directory, $oldCommit, $newCommit) use ($runInDi
  * Import state of a particular commit from a path into a new path, committing it with a message
  *
  * @param string $pathFrom
- * @param string $commitFrom
+ * @param Commit $commitFrom
  * @param string $pathTo
  * @param string $message
  */
