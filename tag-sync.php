@@ -330,7 +330,7 @@ $runInSequence(
                 $getCommitsBetween($zfPath, $oldTag, $newTag)
             );
         },
-        function (FrameworkComponent $component) use ($doGitTag, $getCommitHash, $getCommitTime, $newTag) {
+        function (FrameworkComponent $component) use ($doGitTag, $zfPath, $getCommitHash, $getCommitTime, $newTag) {
             $doGitTag(
                 $component->getVendorPath(),
                 sprintf(
