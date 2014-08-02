@@ -81,27 +81,6 @@ $buildComponents = function ($vendorComponentsPath, $frameworkPath) use ($findVe
     );
 };
 
-$extractComponentName = function ($path, $basePath) {
-    $relativePath = str_replace($basePath, '', $path);
-    $segments     = explode('/', $relativePath);
-
-    $name = [];
-
-    while ($nameSegment = array_pop($segments)) {
-        if ($nameSegment === 'Zend') {
-            break;
-        }
-
-        array_unshift($name, $nameSegment);
-    }
-
-    return implode('\\', $name);
-};
-
-$getComponentFrameworkPath = function ($componentName, $zfPath) {
-    return $zfPath . '/library/Zend/' . str_replace('\\', '/', $componentName);
-};
-
 $runInDir = function (callable $callback, $dir) {
     $currentCwd = getcwd();
     chdir($dir);
@@ -220,33 +199,36 @@ $doGitCheckout($zfPath, $tag);
 $doGitReset($zfPath);
 
 array_map(
-    function ($componentPath) use ($extractComponentName, $componentsPath, $doGitCheckout, $tag, $doRsync, $getComponentFrameworkPath, $zfPath, $checkGitDiff, $doGitReset, $doGitTag, $getLastCommit, $getCommitTime, $getCommitHash, $doGitCommit, $doGitPush, $remote) {
-        echo 'Checking "' . $extractComponentName($componentPath, $componentsPath) . '"' . "\n";
-        $doGitReset($componentPath);
-        $doGitCheckout($componentPath, $tag);
+    function (FrameworkComponent $component) use ($doGitCheckout, $tag, $doRsync, $zfPath, $checkGitDiff, $doGitReset, $doGitTag, $getLastCommit, $getCommitTime, $getCommitHash, $doGitCommit, $doGitPush, $remote) {
+        echo 'Checking "' . $component->getName() . ' - [' . $component->getNamespace() . ']"' . "\n";
+        $doGitReset($component->getVendorPath());
+        $doGitCheckout($component->getVendorPath(), $tag);
 
-        $doRsync($getComponentFrameworkPath($extractComponentName($componentPath, $componentsPath), $zfPath), $componentPath);
+        $doRsync($component->getFrameworkPath(), $component->getVendorPath());
 
-        if ($checkGitDiff($componentPath)) {
-            $componentDir = str_replace('\\', '/', 'library/Zend/' . $extractComponentName($componentPath, $componentsPath));
+        if ($checkGitDiff($component->getVendorPath())) {
             $doGitCommit(
-                $componentPath,
+                $component->getVendorPath(),
                 sprintf(
                     "Importing state as of zendframework/zf2@%s (%s)\n\nAutomatic import via rsync\n\nPreparing release for tag '%s'",
-                    $getCommitHash($zfPath, $componentDir),
-                    $getCommitTime($zfPath, $componentDir),
+                    $getCommitHash($zfPath, $component->getFrameworkPath()),
+                    $getCommitTime($zfPath, $component->getFrameworkPath()),
                     $tag
                 )
             );
 
             $doGitTag(
-                $componentPath,
-                'zendframework/zf2@' . $getCommitHash($zfPath, $componentDir) . ' (' . $getCommitTime($zfPath, $componentDir) . ')',
+                $component->getVendorPath(),
+                sprintf(
+                    'zendframework/zf2@%s (%s)',
+                    $getCommitHash($zfPath, $component->getFrameworkPath()),
+                    $getCommitTime($zfPath, $component->getFrameworkPath())
+                ),
                 $tag
             );
 
             //$doGitPush($componentPath, $remote, $tag);
         }
     },
-    $findVendorComponents($componentsPath)
+    $buildComponents($componentsPath, $zfPath)
 );
