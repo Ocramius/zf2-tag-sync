@@ -129,12 +129,23 @@ $doGitReset = function ($directory) use ($runInDir) {
     );
 };
 
-$doGitCommit = function ($directory, $message, $force = false) use ($runInDir) {
+$doGitCommit = function ($directory, $message, $force = false, $timestamp = null) use ($runInDir) {
     $runInDir(
-        function () use ($message, $force) {
+        function () use ($message, $force, $timestamp) {
             exec('git add -A :/');
             exec(sprintf(
-                'git commit -a %s-m %s',
+                '%s git commit -a %s-m %s',
+                $timestamp
+                    ? sprintf(
+                        'GIT_AUTHOR_DATE=%s GIT_COMMITTER_DATE=%s &&',
+                        escapeshellarg(
+                            (new \DateTime('@' . $timestamp, new \DateTimeZone('UTC')))->format(\DateTime::ISO8601)
+                        ),
+                        escapeshellarg(
+                            (new \DateTime('@' . $timestamp, new \DateTimeZone('UTC')))->format(\DateTime::ISO8601)
+                        )
+                    )
+                    : '',
                 $force ? '--allow-empty ' : '',
                 escapeshellarg($message)
             ));
