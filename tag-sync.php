@@ -129,12 +129,13 @@ $doGitReset = function ($directory) use ($runInDir) {
     );
 };
 
-$doGitCommit = function ($directory, $message) use ($runInDir) {
+$doGitCommit = function ($directory, $message, $force = false) use ($runInDir) {
     $runInDir(
-        function () use ($message) {
+        function () use ($message, $force) {
             exec('git add -A :/');
             exec(sprintf(
-                'git commit -S -a -m %s',
+                'git commit -S -a %s-m %s',
+                $force ? '--allow-empty ' : '',
                 escapeshellarg($message)
             ));
         },
