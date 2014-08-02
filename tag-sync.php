@@ -158,7 +158,7 @@ $doGitTag = function ($directory, $message, $tag) use ($runInDir) {
     $runInDir(
         function () use ($message, $tag) {
             exec(sprintf(
-                'git tag -f -s %s -m %s',
+                'git tag -s %s -m %s',
                 escapeshellarg($tag),
                 escapeshellarg($message)
             ));
