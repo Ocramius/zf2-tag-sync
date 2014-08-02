@@ -302,9 +302,6 @@ $runInSequence = function ($functions, $data) {
     );
 };
 
-$doGitCheckout($zfPath, $newTag);
-$doGitReset($zfPath);
-
 $runInSequence(
     [
         function (FrameworkComponent $component) use ($doGitReset) {
@@ -351,7 +348,7 @@ $runInSequence(
             $doGitCheckout($component->getVendorPath(), $newTag);
             $doRsync($component->getFrameworkPath(), $component->getVendorPath());
 
-            if ($checkGitDiff) {
+            if ($checkGitDiff($component->getFrameworkPath(), $component->getVendorPath())) {
                 throw new \Exception(sprintf(
                     'Component "%s" differs from framework component path for tag "%s"',
                     $component->getName(),
