@@ -363,5 +363,5 @@ $runInSequence(
             //$doGitPush($component->getVendorPath(), $remote, $newTag);
         },
     ],
-    array_slice($buildComponents($componentsPath, $zfPath), 0, 2)
+    $buildComponents($componentsPath, $zfPath)
 );
