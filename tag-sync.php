@@ -7,7 +7,8 @@ $settings = require __DIR__ . '/settings.php';
 
 $componentsPath = $settings['componentsPath'];
 $zfPath         = $settings['zfPath'];
-$tag            = $settings['toTag'];
+$oldTag         = $settings['fromTag'];
+$newTag         = $settings['toTag'];
 $remote         = $settings['componentsRemote'];
 
 /**
@@ -195,14 +196,15 @@ $getCommitHash = function ($directory, $path) use ($getLastCommit) {
     return explode(':', $getLastCommit($directory, $path))[1];
 };
 
-$doGitCheckout($zfPath, $tag);
+$doGitCheckout($zfPath, $newTag);
 $doGitReset($zfPath);
 
 array_map(
-    function (FrameworkComponent $component) use ($doGitCheckout, $tag, $doRsync, $zfPath, $checkGitDiff, $doGitReset, $doGitTag, $getLastCommit, $getCommitTime, $getCommitHash, $doGitCommit, $doGitPush, $remote) {
+    function (FrameworkComponent $component) use ($doGitCheckout, $oldTag, $newTag, $doRsync, $zfPath, $checkGitDiff, $doGitReset, $doGitTag, $getLastCommit, $getCommitTime, $getCommitHash, $doGitCommit, $doGitPush, $remote) {
         echo 'Checking "' . $component->getName() . ' - [' . $component->getNamespace() . ']"' . "\n";
+
         $doGitReset($component->getVendorPath());
-        $doGitCheckout($component->getVendorPath(), $tag);
+        $doGitCheckout($component->getVendorPath(), $oldTag);
 
         $doRsync($component->getFrameworkPath(), $component->getVendorPath());
 
@@ -213,7 +215,7 @@ array_map(
                     "Importing state as of zendframework/zf2@%s (%s)\n\nAutomatic import via rsync\n\nPreparing release for tag '%s'",
                     $getCommitHash($zfPath, $component->getFrameworkPath()),
                     $getCommitTime($zfPath, $component->getFrameworkPath()),
-                    $tag
+                    $newTag
                 )
             );
 
@@ -224,7 +226,7 @@ array_map(
                     $getCommitHash($zfPath, $component->getFrameworkPath()),
                     $getCommitTime($zfPath, $component->getFrameworkPath())
                 ),
-                $tag
+                $newTag
             );
 
             //$doGitPush($componentPath, $remote, $tag);
