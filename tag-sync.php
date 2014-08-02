@@ -280,7 +280,7 @@ array_map(
 
         array_map(
             function (Commit $commit) use ($importCommit, $component) {
-                var_dump(['import' => ['hash' => $commit->getHash(), 'component' => $component->getName()]]);
+                echo 'Importing commit ' . $commit->getHash() . ' for component ' . $component->getName() . \PHP_EOL;
                 $importCommit(
                     $component->getFrameworkPath(),
                     $commit->getHash(),
