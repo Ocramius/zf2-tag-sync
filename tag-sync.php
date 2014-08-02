@@ -1,6 +1,8 @@
 #!/usr/bin/env php
 <?php
 
+require_once __DIR__ . '/FrameworkComponent.php';
+
 $settings = require __DIR__ . '/settings.php';
 
 $componentsPath = $settings['componentsPath'];
@@ -8,12 +10,47 @@ $zfPath         = $settings['zfPath'];
 $tag            = $settings['toTag'];
 $remote         = $settings['componentsRemote'];
 
-$findVendorComponents = function ($path) {
-    new RecursiveIteratorIterator(
-        new RecursiveDirectoryIterator($path),
-        RecursiveIteratorIterator::SELF_FIRST
-    );
+/**
+ * @param string $path
+ * @param string $basePath
+ *
+ * @return string
+ */
+$extractComponentNamespace = function ($path, $basePath) {
+    $relativePath = str_replace($basePath, '', $path);
+    $segments     = explode('/', $relativePath);
 
+    $name = [];
+
+    while ($nameSegment = array_pop($segments)) {
+        if ($nameSegment === 'Zend') {
+            break;
+        }
+
+        array_unshift($name, $nameSegment);
+    }
+
+    return implode('\\', $name);
+};
+
+/**
+ * @param string $componentNamespace
+ * @param string $zfPath
+ *
+ * @return string
+ */
+$getComponentFrameworkPath = function ($componentNamespace, $zfPath) {
+    return $zfPath . '/library/Zend/' . str_replace('\\', '/', $componentNamespace);
+};
+
+/**
+ * Retrieve the paths of all zendframework components within the vendor dir
+ *
+ * @param string $path
+ *
+ * @return FrameworkComponent[]
+ */
+$findVendorComponents = function ($path) use ($componentsPath, $extractComponentNamespace, $getComponentFrameworkPath) {
     return array_map(
         function (\SplFileInfo $dir) {
             return $dir->getRealPath();
