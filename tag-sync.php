@@ -325,9 +325,6 @@ $runInSequence = function ($functions, $data) {
 
 $runInSequence(
     [
-        function (FrameworkComponent $component) use ($doGitFetch) {
-            $doGitFetch($component->getVendorPath());
-        },
         function (FrameworkComponent $component) use ($doGitReset) {
             $doGitReset($component->getFrameworkPath());
             $doGitReset($component->getVendorPath());
@@ -384,5 +381,12 @@ $runInSequence(
             //$doGitPush($component->getVendorPath(), $remote, $newTag);
         },
     ],
-    $buildComponents($componentsPath, $zfPath)
+    array_filter(
+        $buildComponents($componentsPath, $zfPath),
+        function (FrameworkComponent $component) use ($doGitFetch, $hasTag, $newTag) {
+            $doGitFetch($component->getVendorPath());
+
+            return ! $hasTag($component->getVendorPath(), $newTag);
+        }
+    )
 );
