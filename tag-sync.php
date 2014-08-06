@@ -119,6 +119,15 @@ $doRsync = function ($origin, $target) {
     ));
 };
 
+$doGitFetch = function ($directory) use ($runInDir) {
+    $runInDir(
+        function () {
+            exec('git fetch --all');
+        },
+        $directory
+    );
+};
+
 $doGitReset = function ($directory) use ($runInDir) {
     $runInDir(
         function () {
@@ -197,6 +206,18 @@ $doGitCheckoutNewBranch = function ($directory, $branchName) use ($runInDir) {
                 'git checkout -b %s',
                 escapeshellarg($branchName)
             ));
+        },
+        $directory
+    );
+};
+
+
+$hasTag = function ($directory, $tag) use ($runInDir) {
+    return $runInDir(
+        function () use ($tag) {
+            exec('git tag', $foundTags);
+
+            return in_array($tag, $foundTags, true);
         },
         $directory
     );
@@ -304,6 +325,9 @@ $runInSequence = function ($functions, $data) {
 
 $runInSequence(
     [
+        function (FrameworkComponent $component) use ($doGitFetch) {
+            $doGitFetch($component->getVendorPath());
+        },
         function (FrameworkComponent $component) use ($doGitReset) {
             $doGitReset($component->getFrameworkPath());
             $doGitReset($component->getVendorPath());
