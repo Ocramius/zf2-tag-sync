@@ -201,7 +201,9 @@ $checkGitDiff = function ($directory) use ($runInDir) {
 $checkDiff = function ($directory1, $directory2) use ($runInDir) {
     exec(sprintf('diff -r --exclude=".git" %s %s', escapeshellarg($directory1), escapeshellarg($directory2)), $output);
 
-    var_dump(['diff' => $output]);
+    if ($output) {
+        var_dump(['Detected diff' => $output]);
+    }
 
     return (bool) $output;
 };
