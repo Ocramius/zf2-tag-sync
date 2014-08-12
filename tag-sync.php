@@ -146,7 +146,7 @@ $doGitCommit = function ($directory, $message, $force = false, $timestamp = null
                 '%s git commit -a %s-m %s',
                 $timestamp
                     ? sprintf(
-                        'GIT_AUTHOR_DATE=%s GIT_COMMITTER_DATE=%s &&',
+                        'GIT_AUTHOR_DATE=%s GIT_COMMITTER_DATE=%s ',
                         escapeshellarg(
                             (new \DateTime('@' . $timestamp, new \DateTimeZone('UTC')))->format(\DateTime::ISO8601)
                         ),
