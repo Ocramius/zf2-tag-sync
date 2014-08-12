@@ -429,7 +429,8 @@ $runInSequence(
             );
 
             $doGitPush($component->getVendorPath(), $remote, 'master');
-
+        },
+        function (FrameworkComponent $component) use ($remote, $doGitPush, $newTag) {
             echo sprintf(
                 'Pushing tag "%s" from vendor path "%s"' . PHP_EOL,
                 $newTag,
