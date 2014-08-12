@@ -198,14 +198,10 @@ $checkGitDiff = function ($directory) use ($runInDir) {
     );
 };
 
-$checkDiff = function ($directory1, $directory2) use ($runInDir) {
-    exec(sprintf('diff -r --exclude=".git" %s %s', escapeshellarg($directory1), escapeshellarg($directory2)), $output);
+$checkDiff = function ($directory1, $directory2) {
+    exec(sprintf('diff -r --exclude=".git" %s %s', escapeshellarg($directory1), escapeshellarg($directory2)), $diff);
 
-    if ($output) {
-        var_dump(['Detected diff' => $output]);
-    }
-
-    return (bool) $output;
+    return $diff;
 };
 
 $doGitCheckoutNewBranch = function ($directory, $branchName) use ($runInDir) {
@@ -415,11 +411,12 @@ $runInSequence(
                 $component->getVendorPath()
             );
 
-            if ($checkDiff($component->getFrameworkPath(), $component->getVendorPath())) {
+            if ($diff = $checkDiff($component->getFrameworkPath(), $component->getVendorPath())) {
                 throw new \Exception(sprintf(
-                    'Component "%s" differs from framework component path for tag "%s"',
+                    'Component "%s" differs from framework component path for tag "%s": ' . PHP_EOL . '%s',
                     $component->getName(),
-                    $newTag
+                    $newTag,
+                    implode(PHP_EOL, $diff)
                 ));
             }
         },
