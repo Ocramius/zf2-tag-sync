@@ -422,7 +422,21 @@ $runInSequence(
             }
         },
         function (FrameworkComponent $component) use ($remote, $doGitPush, $newTag) {
-            //$doGitPush($component->getVendorPath(), $remote, $newTag);
+            echo sprintf(
+                'Pushing branch "%s" from vendor path "%s"' . PHP_EOL,
+                'master',
+                $component->getVendorPath()
+            );
+
+            $doGitPush($component->getVendorPath(), $remote, 'master');
+
+            echo sprintf(
+                'Pushing tag "%s" from vendor path "%s"' . PHP_EOL,
+                $newTag,
+                $component->getVendorPath()
+            );
+
+            $doGitPush($component->getVendorPath(), $remote, $newTag);
         },
     ],
     array_filter(
