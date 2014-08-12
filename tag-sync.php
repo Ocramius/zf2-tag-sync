@@ -326,19 +326,28 @@ $runInSequence = function ($functions, $data) {
 $runInSequence(
     [
         function (FrameworkComponent $component) use ($doGitReset) {
+            echo sprintf('Git reset of framework path "%s"' . PHP_EOL, $component->getFrameworkPath());
             $doGitReset($component->getFrameworkPath());
+            echo sprintf('Git reset of vendor path "%s"' . PHP_EOL, $component->getVendorPath());
             $doGitReset($component->getVendorPath());
         },
         function (FrameworkComponent $component) use ($getCommitsBetween, $doGitCheckoutNewBranch, $importCommit, $doGitCheckout, $oldTag, $newTag, $zfPath) {
             echo 'Checking "' . $component->getName() . ' - [' . $component->getNamespace() . ']"' . "\n";
 
+            echo sprintf('Checkout "%s" in framework path "%s"' . PHP_EOL, $oldTag, $component->getFrameworkPath());
             $doGitCheckout($component->getFrameworkPath(), $oldTag); // start importing from the old tag first
             //$doGitCheckoutNewBranch($component->getVendorPath(), 'import-commits-from-' . $oldTag . '-to-' . $newTag);
+            echo sprintf('Checkout "%s" in vendor path "%s"' . PHP_EOL, 'master', $component->getVendorPath());
             $doGitCheckout($component->getVendorPath(), 'master');
 
             array_map(
                 function (Commit $commit) use ($importCommit, $component) {
-                    echo 'Importing commit ' . $commit->getHash() . ' for component ' . $component->getName() . \PHP_EOL;
+                    echo sprintf(
+                        'Importing commit "%s" for component "%s"' . \PHP_EOL,
+                        $commit->getHash(),
+                        $component->getName()
+                    );
+
                     $importCommit(
                         $component->getFrameworkPath(),
                         $commit,
@@ -354,6 +363,8 @@ $runInSequence(
             );
         },
         function (FrameworkComponent $component) use ($doGitTag, $zfPath, $getCommitHash, $getCommitTime, $newTag) {
+            echo sprintf('Tagging "%s" in vendor path "%s"' . PHP_EOL, $newTag, $component->getVendorPath());
+
             $doGitTag(
                 $component->getVendorPath(),
                 sprintf(
@@ -365,9 +376,42 @@ $runInSequence(
             );
         },
         function (FrameworkComponent $component) use ($checkGitDiff, $doRsync, $doGitCheckout, $newTag) {
+            echo sprintf(
+                'Verifying synchronization of vendor path "%s" with framework path "%s" at tag "%s"' . PHP_EOL,
+                $component->getVendorPath(),
+                $component->getFrameworkPath(),
+                $newTag
+            );
+
+            echo sprintf(
+                'Checkout "%s" in framework path "%s"' . PHP_EOL,
+                $newTag,
+                $component->getFrameworkPath()
+            );
+
             $doGitCheckout($component->getFrameworkPath(), $newTag);
+
+            echo sprintf(
+                'Checkout "%s" in vendor path "%s"' . PHP_EOL,
+                $newTag,
+                $component->getVendorPath()
+            );
+
             $doGitCheckout($component->getVendorPath(), $newTag);
+
+            echo sprintf(
+                'Rsync framework "%s" into "%s"' . PHP_EOL,
+                $component->getFrameworkPath(),
+                $component->getVendorPath()
+            );
+
             $doRsync($component->getFrameworkPath(), $component->getVendorPath());
+
+            echo sprintf(
+                'Checking that diff between framework path "%s" and vendor path "%s" is empty' . PHP_EOL,
+                $component->getFrameworkPath(),
+                $component->getVendorPath()
+            );
 
             if ($checkGitDiff($component->getFrameworkPath(), $component->getVendorPath())) {
                 throw new \Exception(sprintf(
