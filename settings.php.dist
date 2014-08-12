@@ -6,9 +6,9 @@ return [
     // assuming the framework was installed here
     'zfPath'           => __DIR__ . '/zf2',
     // tag to start from
-    'fromTag'          => 'release-2.3.0',
+    'fromTag'          => 'release-2.3.1',
     // tag to be created/synchronized
-    'toTag'            => 'release-2.3.1',
+    'toTag'            => 'release-2.3.2',
     // remote where to push to
     'componentsRemote' => 'origin',
 ];
