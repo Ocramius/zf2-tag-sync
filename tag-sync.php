@@ -284,14 +284,14 @@ $getCommitsBetween = function ($directory, $oldCommit, $newCommit) use ($runInDi
                 $output
             );
 
-            return array_map(
+            return array_reverse(array_map(
                 function ($commitString) {
                     $commitData = explode(':', $commitString);
 
                     return new Commit($commitData[1], (int) $commitData[0]);
                 },
                 $output
-            );
+            ));
         },
         $directory
     );
