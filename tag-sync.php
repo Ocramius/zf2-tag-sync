@@ -198,6 +198,14 @@ $checkGitDiff = function ($directory) use ($runInDir) {
     );
 };
 
+$checkDiff = function ($directory1, $directory2) use ($runInDir) {
+    exec(sprintf('diff -r --exclude=".git" %s %s', escapeshellarg($directory1), escapeshellarg($directory2)), $output);
+
+    var_dump(['diff' => $output]);
+
+    return (bool) $output;
+};
+
 $doGitCheckoutNewBranch = function ($directory, $branchName) use ($runInDir) {
     $runInDir(
         function () use ($branchName) {
@@ -375,7 +383,7 @@ $runInSequence(
                 $newTag
             );
         },
-        function (FrameworkComponent $component) use ($checkGitDiff, $doRsync, $doGitCheckout, $newTag) {
+        function (FrameworkComponent $component) use ($checkDiff, $doGitCheckout, $newTag) {
             echo sprintf(
                 'Verifying synchronization of vendor path "%s" with framework path "%s" at tag "%s"' . PHP_EOL,
                 $component->getVendorPath(),
@@ -400,20 +408,12 @@ $runInSequence(
             $doGitCheckout($component->getVendorPath(), $newTag);
 
             echo sprintf(
-                'Rsync framework "%s" into "%s"' . PHP_EOL,
-                $component->getFrameworkPath(),
-                $component->getVendorPath()
-            );
-
-            $doRsync($component->getFrameworkPath(), $component->getVendorPath());
-
-            echo sprintf(
                 'Checking that diff between framework path "%s" and vendor path "%s" is empty' . PHP_EOL,
                 $component->getFrameworkPath(),
                 $component->getVendorPath()
             );
 
-            if ($checkGitDiff($component->getFrameworkPath(), $component->getVendorPath())) {
+            if ($checkDiff($component->getFrameworkPath(), $component->getVendorPath())) {
                 throw new \Exception(sprintf(
                     'Component "%s" differs from framework component path for tag "%s"',
                     $component->getName(),
