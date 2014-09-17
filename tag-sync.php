@@ -192,7 +192,9 @@ $doGitPush = function ($directory, $remote, $ref) use ($runInDir) {
 $checkGitDiff = function ($directory) use ($runInDir) {
     return $runInDir(
         function () {
-            return (bool) strlen(exec('git diff'));
+            exec('git diff', $output);
+
+            return $output;
         },
         $directory
     );
@@ -366,6 +368,37 @@ $runInSequence(
                     );
                 },
                 $getCommitsBetween($zfPath, $oldTag, $newTag)
+            );
+        },
+        function (FrameworkComponent $component) use ($checkDiff, $newTag, $doGitCheckoutNewBranch, $doGitCheckout, $doRsync, $doGitCommit) {
+            if (! $diff = $checkDiff($component->getFrameworkPath(), $component->getVendorPath())) {
+                return;
+            }
+
+            echo sprintf(
+                'Vendor path "%s" and framework path "%s" are out of sync at tag "%s", creating release branch' . PHP_EOL,
+                $component->getVendorPath(),
+                $component->getFrameworkPath(),
+                $newTag
+            );
+
+            $doGitCheckoutNewBranch(
+                $component->getVendorPath(),
+                'release-sync/' . $newTag
+            );
+
+            $doGitCheckout($component->getFrameworkPath(), $newTag);
+            $doRsync($component->getFrameworkPath(), $component->getVendorPath());
+
+            $doGitCommit(
+                $component->getVendorPath(),
+                sprintf(
+                    'Synchronized component %s with tag %s',
+                    $component->getName(),
+                    $newTag
+                ),
+                false,
+                (new DateTime())->getTimestamp()
             );
         },
         function (FrameworkComponent $component) use ($doGitTag, $zfPath, $getCommitHash, $getCommitTime, $newTag) {
