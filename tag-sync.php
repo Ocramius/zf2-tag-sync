@@ -63,7 +63,9 @@ $findVendorComponents = function ($path) {
                 RecursiveIteratorIterator::SELF_FIRST
             ),
             function (\SplFileInfo $dir) {
-                return $dir->isDir() && is_dir($dir->getRealPath() . '/.git');
+                return $dir->isDir()
+                    && is_dir($dir->getRealPath() . '/.git')
+                    && basename($dir->getRealPath()) !== 'zendxml';
             }
         ))
     );
